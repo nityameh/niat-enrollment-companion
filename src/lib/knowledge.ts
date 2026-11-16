@@ -3,30 +3,54 @@
 // Knowledge page (/admin): edit or disable answers, add company-approved answers,
 // and choose whether public website facts may be used at all.
 import type { AnswerMode, KnowledgeEntry } from "./types";
+import type { ModeId } from "./modes";
 
 const T0 = 0;
 
-// Facts read from NIAT's public pages on 16-17 Nov 2026. Re-check before a real launch.
-const PUBLIC_SEED: Omit<KnowledgeEntry, "updatedAt" | "enabled" | "kind">[] = [
-  { id: "F1", title: "What NIAT is", answer: "NIAT is an upskilling programme run by NxtWave together with collaborating universities and colleges. NIAT itself is not a university or a degree-awarding body.", source: "https://www.niatindia.com/admissions" },
+// Facts read from NIAT's public pages and official YouTube channel on 16-17 Nov 2026.
+// Re-check before a real launch. `topics` lists the agent modes a fact is sent in
+// (no topics = every mode), which keeps prompts small.
+const LLM = "https://www.niatindia.com/llm-info";
+const TERMS = "https://www.niatindia.com/terms-and-conditions";
+const PLACEMENTS = "https://www.niatindia.com/placements";
+const YT = "https://www.youtube.com/@NIATIndia.";
+
+type Seed = Omit<KnowledgeEntry, "updatedAt" | "enabled" | "kind">;
+
+const PUBLIC_SEED: Seed[] = [
+  { id: "F1", title: "What NIAT is", answer: "NIAT (NxtWave of Innovation in Advanced Technologies) is a technology upskilling programme by NxtWave, offered at collaborating universities and institutions. NIAT itself is not a university, college or degree-awarding body.", source: LLM },
   { id: "F2", title: "Who awards the degree", answer: "The B.Tech degree is awarded by the collaborating university, which is UGC-recognised or AICTE-approved. Admission to the university is at the university's discretion under UGC and AICTE norms.", source: "https://nxtwaveprograms.ccbp.in/niat" },
-  { id: "F3", title: "Two separate applications", answer: "Candidates must apply to their chosen university separately; the NIAT enrolment and the university admission are two different steps.", source: "https://www.niatindia.com/admissions" },
-  { id: "F4", title: "What the NAT is", answer: "The NAT is a 90-minute test of cognitive abilities and potential. NIAT states that NAT is not an entrance examination for any university.", source: "https://www.niatindia.com/admissions" },
-  { id: "F5", title: "Admission steps", answer: "The admissions process is: apply and pay the NAT registration fee, take the NAT, attend a one-on-one counselling session where a collaborating university is suggested, then enrol in the upskilling programme.", source: "https://www.niatindia.com/admissions" },
-  { id: "F6", title: "NAT registration fee", answer: "The NAT registration fee is shown as Rs 1,200 (non-refundable) on the admissions page; some campaign pages show Rs 600.", source: "https://www.niatindia.com/admissions" },
-  { id: "F7", title: "Industry Ready Certificate", answer: "NIAT issues its own Industry Ready Certificate in addition to the university degree. It is non-credit and does not affect degree progression.", source: "https://nxtwaveprograms.ccbp.in/niat" },
-  { id: "F8", title: "Curriculum", answer: "The curriculum has four phases (Decode, Develop, Architect, Ship). The first phase covers AI essentials, no-code automation with n8n and APIs, Python, frontend development, programming, DSA, maths and aptitude.", source: "https://www.niatindia.com/" },
-  { id: "F9", title: "Where it is offered", answer: "The programme is offered at 35+ collaborating institutions across several Indian states.", source: "https://www.niatindia.com/" },
-  { id: "F10", title: "Placements (no guarantee)", answer: "NIAT says 2,500+ companies have hired from NxtWave programmes. These outcome figures cover several NxtWave programmes, and NIAT states that enrolling does not assure a job or internship.", source: "https://www.niatindia.com/" },
-  { id: "F11", title: "IIT Kharagpur micro-specialisations", answer: "Optional IIT Kharagpur OCN micro-specialisations are offered. IIT Kharagpur does not award or endorse NIAT's certification.", source: "https://www.niatindia.com/" },
-  { id: "F12", title: "Talk to current students", answer: "Prospective students can book a slot to speak with current NIAT students.", source: "https://www.niatindia.com/" },
-  { id: "F13", title: "Hostels", answer: "Hostel accommodation depends on each university's own infrastructure.", source: "https://nxtwaveprograms.ccbp.in/niat" },
-  { id: "F14", title: "Fees", answer: "NIAT's public pages do not list total programme fees; fees vary by university and city. The exact amount, scholarship terms and refund rules must come from the counsellor in writing.", source: "https://www.niatindia.com/" },
-  { id: "F15", title: "Student clubs", answer: "Student clubs run by NIAT students include GenAI, competitive programming, drone, entrepreneurship, public speaking and sports clubs.", source: "https://www.niatindia.com/club" },
+  { id: "F3", title: "Two separate applications", answer: "Applying to a university does not enrol you in NIAT, and NIAT enrolment is not university admission. Candidates must apply to their chosen university separately; the university controls its own admission.", source: LLM },
+  { id: "F4", title: "What the NAT is", answer: "The NAT (NxtWave Assessment Test) is an online test of about 90 minutes. NIAT states that NAT is not an entrance examination for any university.", source: LLM, topics: ["decision_support", "university_enrollment"] },
+  { id: "F5", title: "Admission steps", answer: "Apply on the NIAT portal and pay the NAT fee, take the NAT, attend one-on-one counselling if you qualify (a collaborating university is suggested based on your preferences), then confirm NIAT enrolment. University admission is a separate process.", source: "https://www.niatindia.com/admissions", topics: ["decision_support", "university_enrollment", "niat_enrollment"] },
+  { id: "F6", title: "NAT registration fee", answer: "The 2026 NAT registration fee is Rs 1,200 and it is non-refundable (some campaign pages show Rs 600).", source: LLM, topics: ["fees_guidance", "university_enrollment"] },
+  { id: "F7", title: "Industry Ready Certificate", answer: "NIAT gives its own Industry Ready Certificate in addition to the university degree. It is non-credit, is not a university degree, and is awarded after completing the programme and meeting minimum scores.", source: TERMS, topics: ["decision_support", "program_guidance", "niat_enrollment"] },
+  { id: "F8", title: "Curriculum phases", answer: "The curriculum has four phases (Decode, Develop, Architect, Ship). The first phase covers AI essentials, no-code automation with n8n and APIs, Python, frontend development, programming, DSA, maths and aptitude.", source: "https://www.niatindia.com/", topics: ["decision_support", "program_guidance"] },
+  { id: "F9", title: "Where it is offered", answer: "NIAT's campus page lists 35+ collaborating institutions (38 when checked) in Telangana, Andhra Pradesh, Karnataka, Tamil Nadu, Maharashtra, Rajasthan, Haryana, Delhi NCR, Uttar Pradesh, Madhya Pradesh and Odisha. The full list is at niatindia.com/campus.", source: "https://www.niatindia.com/campus", topics: ["college_choice", "decision_support"] },
+  { id: "F10", title: "Placements (no guarantee)", answer: "NIAT says 2,500+ companies have hired NxtWave learners and cites a highest package of Rs 80 LPA, but these figures cover several NxtWave programmes (including online cohorts) and are not average or guaranteed outcomes. Enrolling in NIAT does not assure a job or internship; outcomes depend on the learner's effort, skills and performance.", source: PLACEMENTS, topics: ["decision_support", "program_guidance"] },
+  { id: "F11", title: "IIT Kharagpur micro-specialisations", answer: "Qualifying students can earn optional IIT Kharagpur OCN micro-specialisations in generative AI. IIT Kharagpur does not issue or endorse NIAT's Industry Ready Certificate.", source: LLM, topics: ["program_guidance", "decision_support"] },
+  { id: "F12", title: "Talk to current students", answer: "Prospective students can book a slot to speak with current NIAT students.", source: "https://www.niatindia.com/", topics: ["decision_support", "program_guidance", "college_choice"] },
+  { id: "F13", title: "Hostels and campus facilities", answer: "Hostels and campus facilities are provided by each university; NIAT does not own or run campuses or hostels. Availability differs by campus (for example, the Aurora Deemed University Hyderabad page lists on-campus and nearby off-campus hostels managed by the university, and transport).", source: "https://www.niatindia.com/campus/niat-hyderabad-aurora-deemed-university", topics: ["college_choice"] },
+  { id: "F14", title: "Total cost", answer: "NIAT indicates the combined university and NIAT cost at roughly Rs 8 to 18 lakh in total, depending on the university. NIAT charges its programme fee separately from the university. The exact amount, any scholarship or discount, and refund rules must come from the counsellor and university in writing.", source: LLM, topics: ["fees_guidance", "decision_support"] },
+  { id: "F15", title: "Student clubs", answer: "Student clubs run by NIAT students include GenAI, competitive programming, drone, entrepreneurship, public speaking, media, sports and social impact clubs.", source: "https://www.niatindia.com/club", topics: ["program_guidance", "college_choice"] },
+  { id: "F16", title: "Eligibility", answer: "Collaborating-institution pages list students who passed 12th from 2023 onwards with Mathematics, Physics and Chemistry; earlier pass-outs are not eligible. Each university's own criteria can differ.", source: LLM, topics: ["university_enrollment", "decision_support"] },
+  { id: "F17", title: "NAT sections", answer: "The NAT has three sections: psychometric, critical thinking and learnability, and mathematics.", source: LLM, topics: ["decision_support"] },
+  { id: "F18", title: "What the NIAT fee covers", answer: "The NIAT Program Fee is made up of a registration or seat-reservation fee and an upskilling fee. It does not include food, accommodation, travel or the university's academic fees, which the university collects directly. Fees are due within 15 days of the payment request unless agreed otherwise in writing.", source: TERMS, topics: ["fees_guidance", "niat_enrollment"] },
+  { id: "F19", title: "Refunds", answer: "Under NIAT's terms, registration and service fees are non-refundable and non-transferable. There is no refund if the student cannot enrol in or continue the university programme. If NxtWave cancels a programme, fees are adjusted towards an alternate course rather than refunded. A student who withdraws must give 7 days' written notice.", source: TERMS, topics: ["fees_guidance", "niat_enrollment"] },
+  { id: "F20", title: "Education loans", answer: "NxtWave may connect families with lenders, but the family is solely responsible for repaying any loan EMIs.", source: TERMS, topics: ["fees_guidance"] },
+  { id: "F21", title: "Health insurance", answer: "Students must hold health insurance of at least Rs 3 lakh for the duration of the programme.", source: TERMS, topics: ["niat_enrollment", "fees_guidance"] },
+  { id: "F22", title: "Parent consent for minors", answer: "A student under 18 can enrol only with a parent's or guardian's consent, and the parent or guardian is responsible for the student following the terms.", source: TERMS, topics: ["niat_enrollment"] },
+  { id: "F23", title: "Help and grievances", answer: "General help: support@niatindia.com or WhatsApp +91 8008 9009 08. Formal grievances go in writing to legal@nxtwave.co.in.", source: TERMS },
+  { id: "F24", title: "Placement support offered", answer: "NxtWave provides interview and assessment preparation and connects students with recruiters, subject to its placement eligibility policy. It does not guarantee jobs, internships or apprenticeships. NIAT also cites 200+ paid internship offers to students.", source: TERMS, topics: ["program_guidance", "decision_support"] },
+  { id: "F25", title: "Recent placement examples", answer: "Recent examples listed on the placements page range from about Rs 5.5 LPA to Rs 15 LPA for roles such as software engineer and data engineer; these come from learners across NxtWave programmes, including online cohorts.", source: PLACEMENTS, topics: ["program_guidance"] },
+  { id: "F26", title: "Programme focus", answer: "The programme focuses on AI/ML, data science, cyber security, robotics, web development, cloud and automation through project-based learning, with a skill map NIAT says it updates every six months.", source: LLM, topics: ["program_guidance", "decision_support"] },
+  { id: "F27", title: "University is independent", answer: "The partner university is an independent institution. NxtWave may update its list of partner universities, and if a university removes a student from campus, the student can no longer continue the NIAT programme and fees are not refunded.", source: TERMS, topics: ["college_choice", "fees_guidance"] },
+  { id: "F28", title: "Student life", answer: "NIAT's official YouTube channel shows its 2026 orientation with students from Hyderabad, Delhi, Pune, Bengaluru, Jaipur, Bhopal and Chennai, cultural events such as Navratri celebrations, student-run startups and career-advice sessions.", source: YT, topics: ["college_choice", "program_guidance"] },
+  { id: "F29", title: "Competitions", answer: "NIAT students take part in hackathons: NIAT's channel features a student who won the Rs 1,00,000 first prize at BizHack, and a NIAT Jaipur team that reached the top 5 out of 75,000+ registrations at the NxtWave x OpenAI Academy buildathon.", source: YT, topics: ["program_guidance", "decision_support"] },
 ];
 
 // Example company-approved answers. In a real deployment NIAT's team writes these.
-const COMPANY_SEED: Omit<KnowledgeEntry, "updatedAt" | "enabled" | "kind">[] = [
+const COMPANY_SEED: Seed[] = [
   { id: "C1", title: "Talking to a counsellor", answer: "Your counsellor can call you at a time that suits you. Share a preferred time in this chat and the call will be arranged.", source: "NIAT team (demo answer)" },
   { id: "C2", title: "Fees, scholarship and refunds", answer: "Exact fees, scholarship terms and refund rules are confirmed by your counsellor in writing, for your specific university. Please do not make any payment based on informal messages.", source: "NIAT team (demo answer)" },
   { id: "C3", title: "Safe payments", answer: "Only pay through the official payment link your counsellor shares. NIAT staff will never ask for your OTP, password or bank PIN.", source: "NIAT team (demo answer)" },
@@ -40,14 +64,33 @@ export function seedKnowledge(): KnowledgeEntry[] {
   ];
 }
 
+/**
+ * Bring a saved knowledge base up to date with new seed facts: add missing entries and
+ * refresh untouched ones (updatedAt 0). Anything the company edited is left alone.
+ */
+export function mergeSeedKnowledge(saved: KnowledgeEntry[]): KnowledgeEntry[] {
+  const byId = new Map(saved.map((k) => [k.id, k]));
+  for (const s of seedKnowledge()) {
+    const cur = byId.get(s.id);
+    if (!cur) saved.push(s);
+    else if (cur.updatedAt === 0) Object.assign(cur, { title: s.title, answer: s.answer, source: s.source, topics: s.topics });
+  }
+  return saved;
+}
+
 /** Entries the bot may use right now. */
 export function activeEntries(knowledge: KnowledgeEntry[], mode: AnswerMode): KnowledgeEntry[] {
   return knowledge.filter((k) => k.enabled && (mode === "company_and_public" || k.kind === "company"));
 }
 
-/** The knowledge block inserted into prompts. */
-export function knowledgePrompt(knowledge: KnowledgeEntry[], mode: AnswerMode): string {
-  const entries = activeEntries(knowledge, mode);
+/**
+ * The knowledge block inserted into prompts. With an agent mode, public facts are limited
+ * to the ones tagged for that mode (company answers are always included).
+ */
+export function knowledgePrompt(knowledge: KnowledgeEntry[], mode: AnswerMode, agentMode?: ModeId): string {
+  const entries = activeEntries(knowledge, mode).filter(
+    (e) => e.kind === "company" || !agentMode || !e.topics?.length || e.topics.includes(agentMode),
+  );
   const company = entries.filter((e) => e.kind === "company");
   const pub = entries.filter((e) => e.kind === "public");
   const fmt = (e: KnowledgeEntry) => `[${e.id}] ${e.title}: ${e.answer}`;

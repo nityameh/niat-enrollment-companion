@@ -186,6 +186,7 @@ export interface KnowledgeEntry {
   title: string;
   answer: string;
   source: string; // URL for public facts, "NIAT team" etc. for company answers
+  topics?: ModeId[]; // agent modes this entry is used in (none = all)
   enabled: boolean;
   updatedAt: number;
 }

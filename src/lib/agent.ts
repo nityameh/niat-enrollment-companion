@@ -36,12 +36,13 @@ Rules:
 - Never ask for or store Aadhaar numbers, bank details, passwords or OTPs.`;
 
 /** Rules + the company's current knowledge base and answer mode. */
-function systemPrompt(): string {
+function systemPrompt(lead: Lead): string {
   const db = loadDb();
+  const mode = lead.mode ?? modeForStage(lead.stage);
   return `${RULES}
 
 KNOWLEDGE
-${knowledgePrompt(db.knowledge, db.settings.answerMode)}`;
+${knowledgePrompt(db.knowledge, db.settings.answerMode, mode)}`;
 }
 
 /** Detect the script of a message so the reply language never depends on the model noticing. */
@@ -180,7 +181,7 @@ async function runClaude(lead: Lead, role: "student" | "parent", text: string, r
         ...fallbackParams(),
         output_config: { effort: CHAT_EFFORT },
         system: [
-          { type: "text", text: systemPrompt(), cache_control: { type: "ephemeral" } },
+          { type: "text", text: systemPrompt(lead), cache_control: { type: "ephemeral" } },
           { type: "text", text: dynamicContext(lead, replyLang) },
         ],
         tools: TOOLS,
@@ -259,7 +260,7 @@ async function runGroq(lead: Lead, role: "student" | "parent", text: string, rep
 
   const effects: ToolEffects = {};
   const replies: string[] = [];
-  const system = `${systemPrompt()}\n\n${dynamicContext(lead, replyLang)}`;
+  const system = `${systemPrompt(lead)}\n\n${dynamicContext(lead, replyLang)}`;
 
   try {
     for (let step = 0; step < MAX_STEPS; step++) {

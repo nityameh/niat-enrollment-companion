@@ -3,7 +3,7 @@ import fs from "fs";
 import path from "path";
 import type { AppEvent, Db, Lead, University } from "./types";
 import { seedDb } from "./seed";
-import { seedKnowledge } from "./knowledge";
+import { mergeSeedKnowledge, seedKnowledge } from "./knowledge";
 import { computeRisk } from "./risk";
 
 // Demo store: the whole database is one JSON document.
@@ -41,7 +41,7 @@ async function redis(command: (string | number)[]): Promise<unknown> {
 
 function migrate(db: Db): Db {
   // Older saved data may predate the knowledge base.
-  if (!db.knowledge) db.knowledge = seedKnowledge();
+  db.knowledge = db.knowledge ? mergeSeedKnowledge(db.knowledge) : seedKnowledge();
   if (!db.settings) db.settings = { answerMode: "company_and_public" };
   return db;
 }
