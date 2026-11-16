@@ -1,5 +1,7 @@
 # NIAT Enrollment Companion (demo)
 
+**Live demo:** https://enrollment-companion.vercel.app · **Code:** https://github.com/nityameh/niat-enrollment-companion
+
 An AI agent that supports families **after** the NIAT one-on-one counselling, from "should we join?" to "enrolled", and tells counsellors who needs a human and why. Built for the NxtWave Jr. Growth Manager Growth Hack Challenge. All people, documents and university rules are synthetic.
 
 ## What it does

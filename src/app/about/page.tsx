@@ -59,6 +59,14 @@ export default function AboutPage() {
           <a href="#how" className="rounded-xl bg-white px-4 py-2.5 font-semibold text-slate-800 no-underline ring-1 ring-slate-200 hover:bg-slate-50">
             How it works
           </a>
+          <a
+            href="https://github.com/nityameh/niat-enrollment-companion"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-xl bg-white px-4 py-2.5 font-semibold text-slate-800 no-underline ring-1 ring-slate-200 hover:bg-slate-50"
+          >
+            Source code
+          </a>
         </div>
       </header>
 
