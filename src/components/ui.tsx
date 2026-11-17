@@ -80,7 +80,7 @@ export function Card({ title, children, right }: { title?: string; children: Rea
 
 export function DemoBanner() {
   return (
-    <div className="bg-slate-900 px-4 py-1.5 text-center text-[11px] text-slate-300">
+    <div className="truncate whitespace-nowrap bg-slate-900 px-4 py-1.5 text-center text-[11px] text-slate-300">
       Demo for the NxtWave Growth Hack Challenge · all families, documents and university rules are synthetic · not an
       official NIAT product
     </div>

@@ -17,10 +17,10 @@ export function JourneyBar({ lead, busy, onRemind }: { lead: ClientLead; busy: s
   const mode = MODES[lead.mode ?? modeForStage(lead.stage)];
 
   return (
-    <section className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+    <section className="shrink-0 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {/* Stepper */}
-        <div className="min-w-[300px] flex-1">
+        <div className="min-w-[280px] flex-1">
           {lead.stage === "dropped" ? (
             <p className="text-sm text-rose-700">Decided not to join · reminders stopped{lead.decisionReason ? ` · “${lead.decisionReason}”` : ""}</p>
           ) : (
@@ -82,8 +82,8 @@ export function JourneyBar({ lead, busy, onRemind }: { lead: ClientLead; busy: s
           >
             {busy === "skip" ? "Sending…" : "🔔 Send automatic reminder now"}
           </button>
-          <p className="mt-1 max-w-[260px] text-[10.5px] leading-tight text-slate-500">
-            In live use this goes out automatically after 3 days without a reply. The demo moves the clock 3 days.
+          <p className="mt-1 max-w-[240px] text-[10.5px] leading-tight text-slate-500">
+            Live: sent automatically after 3 days without a reply. Demo: moves the clock 3 days.
           </p>
         </div>
       </div>
@@ -99,7 +99,7 @@ function DocTrack({ lead }: { lead: ClientLead }) {
   if (!docs.length) return null;
   const flagged: string[] = [];
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate-100 pt-3">
+    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-slate-100 pt-2">
       <span className="text-[11px] font-medium text-slate-500">University documents</span>
       <div className="flex items-center">
         {docs.map((d, i) => {
@@ -128,7 +128,7 @@ function DocTrack({ lead }: { lead: ClientLead }) {
 export function ActivityLog({ events, open, onToggle }: { events: AppEvent[]; open: boolean; onToggle: () => void }) {
   const feed = events.map((e) => ({ e, d: describeEvent(e) })).filter((x) => x.d);
   return (
-    <div className="w-full">
+    <div className="flex min-h-0 w-full flex-1 flex-col">
       <button
         onClick={onToggle}
         className="flex w-full items-center justify-between rounded-xl bg-white px-3 py-2 text-xs font-semibold text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50"
@@ -137,7 +137,7 @@ export function ActivityLog({ events, open, onToggle }: { events: AppEvent[]; op
         <span>{open ? "Hide" : "Show"}</span>
       </button>
       {open && (
-        <ul className="mt-2 max-h-[560px] space-y-2 overflow-y-auto rounded-xl bg-white p-3 ring-1 ring-slate-200">
+        <ul className="mt-2 max-h-[50vh] min-h-0 flex-1 space-y-2 overflow-y-auto rounded-xl bg-white p-3 ring-1 ring-slate-200 lg:max-h-none">
           {feed.length === 0 && <li className="text-xs text-slate-500">Send a message: every action the agent takes appears here.</li>}
           {feed.map(({ e, d }) => (
             <li key={e.id} className="flex gap-2 text-xs">

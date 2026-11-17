@@ -101,16 +101,18 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
   if (!lead || !meta) return <p className="p-8 text-slate-400">Loading…</p>;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
+    // On tablet and laptop the page is exactly one screen tall: header and journey bar take
+    // their natural height and the chat fills the rest, so the whole tablet is visible.
+    <div className="mx-auto flex max-w-6xl flex-col px-4 py-3 md:h-[calc(100dvh-84px)]">
       {/* Family header */}
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <Avatar name={lead.studentName} className="h-11 w-11 text-sm" />
-          <div>
-            <h1 className="text-lg font-semibold text-slate-900">
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex min-w-0 items-center gap-3">
+          <Avatar name={lead.studentName} className="h-9 w-9 text-xs" />
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-semibold text-slate-900">
               {lead.studentName} <span className="font-normal text-slate-400">& {lead.parentName}</span>
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="truncate text-xs text-slate-500">
               {lead.city} · prefers {LANG_NAMES[lead.language]} · {lead.university?.name} · demo date{" "}
               {new Date(meta.now).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
             </p>
@@ -121,12 +123,13 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
         </div>
       </div>
 
-      {error && <p className="mb-4 rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-700 ring-1 ring-rose-200">{error}</p>}
+      {error && <p className="mb-2 rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-700 ring-1 ring-rose-200">{error}</p>}
 
       <JourneyBar lead={lead} busy={busy} onRemind={skip} />
 
-      <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-start">
-        <div className="min-w-0 flex-1">
+      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-3 lg:flex-row">
+        {/* Phones: fixed height. Tablet/laptop: fills the remaining screen (never below 360px). */}
+        <div className="h-[600px] min-w-0 flex-1 md:h-auto md:min-h-[360px]">
         <PhoneChat
           lead={lead}
           role={role}
@@ -139,7 +142,7 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
         />
         </div>
         {/* Log sits beside the chat: a small button until opened */}
-        <div className={`lg:sticky lg:top-20 ${logOpen ? "lg:w-[300px]" : "lg:w-[190px]"}`}>
+        <div className={`flex min-h-0 flex-col ${logOpen ? "lg:w-[300px]" : "lg:w-[190px]"}`}>
           <ActivityLog events={events} open={logOpen} onToggle={() => setLogOpen((v) => !v)} />
         </div>
       </div>

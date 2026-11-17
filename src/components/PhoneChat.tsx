@@ -53,29 +53,27 @@ export default function PhoneChat({ lead, role, onRole, sources, busy, onSend, o
   }
 
   return (
-    <div className="flex flex-col items-center">
-      {/* Who am I? */}
-      <div className="mb-3 flex rounded-full bg-slate-100 p-1 text-xs font-medium">
-        {(["parent", "student"] as const).map((r) => (
-          <button
-            key={r}
-            onClick={() => onRole(r)}
-            className={`rounded-full px-4 py-1.5 transition ${role === r ? "bg-white text-slate-900 shadow" : "text-slate-500 hover:text-slate-700"}`}
-          >
-            {r === "parent" ? `Parent · ${lead.parentName.split(" ")[0]}` : `Student · ${lead.studentName.split(" ")[0]}`}
-          </button>
-        ))}
-      </div>
-
-      {/* Phone */}
-      <div className="relative w-full max-w-[920px] rounded-[1.8rem] bg-slate-900 p-3 shadow-2xl shadow-slate-900/20">
-        <div className="flex h-[620px] flex-col overflow-hidden rounded-[1.2rem] bg-[#efeae2]">
-          {/* Chat header */}
-          <div className="flex items-center gap-3 bg-[#075e54] px-4 py-3 text-white">
+    <div className="flex h-full flex-col items-center">
+      {/* Tablet: fills the height it is given (the page sizes it to the screen) */}
+      <div className="relative flex h-full w-full max-w-[920px] flex-col rounded-[1.6rem] bg-slate-900 p-2.5 shadow-2xl shadow-slate-900/20">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[1.1rem] bg-[#efeae2]">
+          {/* Chat header, with the "who am I" switch */}
+          <div className="flex flex-wrap items-center gap-3 bg-[#075e54] px-4 py-2.5 text-white">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-bold text-[#075e54]">N</span>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">NIAT Companion</p>
               <p className="truncate text-[11px] text-white/75">{busy === "chat" ? "typing…" : `${mode.icon} ${mode.label} · AI assistant`}</p>
+            </div>
+            <div className="flex rounded-full bg-white/15 p-0.5 text-[11px] font-medium" title="Chat as the parent or the student">
+              {(["parent", "student"] as const).map((r) => (
+                <button
+                  key={r}
+                  onClick={() => onRole(r)}
+                  className={`rounded-full px-3 py-1 transition ${role === r ? "bg-white text-[#075e54] shadow" : "text-white/85 hover:text-white"}`}
+                >
+                  {r === "parent" ? `Parent · ${lead.parentName.split(" ")[0]}` : `Student · ${lead.studentName.split(" ")[0]}`}
+                </button>
+              ))}
             </div>
           </div>
 

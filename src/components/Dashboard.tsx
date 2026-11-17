@@ -230,7 +230,7 @@ export default function Dashboard() {
               ))}
             </div>
           </div>
-          <ul className="max-h-[50vh] flex-1 overflow-y-auto p-2 lg:max-h-none">
+          <ul className="max-h-[240px] flex-1 overflow-y-auto p-2 lg:max-h-none">
             {list.map((l) => (
               <li key={l.id}>
                 <button

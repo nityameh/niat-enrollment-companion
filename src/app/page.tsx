@@ -69,7 +69,7 @@ export default async function Home() {
               {families.length} families · {active} active · sorted by risk
             </p>
           </div>
-          <ul className="max-h-[60vh] flex-1 overflow-y-auto p-2 lg:max-h-none">
+          <ul className="max-h-[240px] flex-1 overflow-y-auto p-2 lg:max-h-none">
             {families.map((l) => (
               <li key={l.id}>
                 <Link href={`/lead/${l.id}?as=parent`} className="flex items-center gap-3 rounded-xl px-2 py-2 no-underline hover:bg-slate-50">
