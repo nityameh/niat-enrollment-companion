@@ -2,7 +2,8 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import type { DocIssue, DocRecord, DocType, Lead } from "./types";
-import { aiEnabled, jsonCall } from "./llm";
+import { aiEnabled, jsonCall, textCall } from "./llm";
+import { LANG_NAMES } from "./types";
 import { getUniversity, logEvent, newId, now, touch, uploadsDir } from "./store";
 
 const DOC_LABEL: Record<DocType, string> = {
@@ -161,7 +162,20 @@ export async function checkDocument(
     record.status === "ok"
       ? `${DOC_LABEL[expected]} checked: looks good.`
       : `${DOC_LABEL[expected]} needs attention:\n- ${issues.map((i) => i.message).join("\n- ")}`;
-  lead.chat.push({ id: newId("m"), role: "agent", text: `${summary}${mode === "mock" ? "\n\n(mock mode)" : ""}`, ts: now(), kind: "document" });
+  let message = summary;
+  if (mode === "ai" && lead.language !== "en") {
+    try {
+      message =
+        (await textCall({
+          system: `Translate this message for an Indian parent into ${LANG_NAMES[lead.language]}, in simple everyday words. Keep names, document names and numbers exactly. Output only the translation.`,
+          user: summary,
+          maxTokens: 800,
+        })) || summary;
+    } catch {
+      // Fall back to English if translation fails.
+    }
+  }
+  lead.chat.push({ id: newId("m"), role: "agent", text: `${message}${mode === "mock" ? "\n\n(mock mode)" : ""}`, ts: now(), kind: "document" });
   touch(lead);
   return record;
 }

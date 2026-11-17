@@ -5,6 +5,14 @@ import { Avatar, RiskBadge, stageLabel } from "@/components/ui";
 
 export const dynamic = "force-dynamic";
 
+const TOUR = [
+  { title: "Ask as a parent", text: "Open Ravi's chat and tap “ఈ డిగ్రీ నిజమైనదేనా?” (Is this degree real?). The answer is cited.", href: "/lead/ravi?as=parent" },
+  { title: "Send a document", text: "Tap 📎 → Class 12 → “sample: name typo”. The AI reads the photo and flags the mismatch.", href: "/lead/ravi?as=parent" },
+  { title: "Skip 3 days", text: "Click “Skip 3 days”. A quiet family gets one useful reminder in their language.", href: "/lead/ravi?as=parent" },
+  { title: "Be the counsellor", text: "See who is at risk and why, then click “Prep my call”.", href: "/counsellor" },
+  { title: "Control the bot", text: "Switch to “Company answers only”, then ask about the degree again: it hands over instead of guessing.", href: "/admin" },
+];
+
 export default async function Home() {
   await hydrate();
   const db = loadDb();
@@ -32,6 +40,26 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Guided tour for reviewers */}
+      <section className="mb-12 rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-emerald-50 p-6">
+        <h2 className="text-lg font-semibold text-slate-900">Try it in 60 seconds</h2>
+        <ol className="mt-4 grid gap-3 sm:grid-cols-5">
+          {TOUR.map((s, i) => (
+            <li key={s.title}>
+              <Link
+                href={s.href}
+                className="flex h-full flex-col rounded-2xl bg-white p-4 no-underline shadow-sm ring-1 ring-slate-200/70 transition hover:-translate-y-0.5 hover:ring-indigo-300"
+              >
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                  {i + 1}
+                </span>
+                <span className="mt-2 text-sm font-semibold text-slate-900">{s.title}</span>
+                <span className="mt-1 text-xs leading-relaxed text-slate-600">{s.text}</span>
+              </Link>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       {/* Families */}
       <section>

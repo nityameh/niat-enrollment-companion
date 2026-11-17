@@ -2,12 +2,15 @@
 import type { ModeId } from "./modes";
 // Everything here is demo data; nothing represents a real student or a real university rule.
 
-export type Lang = "en" | "te" | "hi";
+export type Lang = "en" | "te" | "hi" | "ta" | "kn" | "ml";
 
 export const LANG_NAMES: Record<Lang, string> = {
   en: "English",
   te: "Telugu",
   hi: "Hindi",
+  ta: "Tamil",
+  kn: "Kannada",
+  ml: "Malayalam",
 };
 
 export type Stage =
@@ -196,6 +199,8 @@ export type AnswerMode = "company_only" | "company_and_public";
 
 export interface Settings {
   answerMode: AnswerMode;
+  /** Last check of public facts against NIAT's live site. */
+  lastRefresh?: import("./refresh").RefreshResult;
 }
 
 export interface Db {

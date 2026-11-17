@@ -1,7 +1,7 @@
 import "server-only";
 import Groq from "groq-sdk";
 import { MODEL, claude, fallbackParams, textOf, type Effort } from "./claude";
-import { GROQ_CHAT_MODEL, GROQ_FAST_MODEL, GROQ_VISION_MODEL, groq, reasoningParams } from "./groq";
+import { GROQ_CHAT_MODEL, GROQ_FAST_MODEL, GROQ_VISION_MODEL, groq, modelChain, reasoningParams, withGroqFallback } from "./groq";
 
 export type Provider = "anthropic" | "groq" | "mock";
 
@@ -66,11 +66,13 @@ export async function jsonCall<T>(opts: {
   }
 
   if (provider() === "groq") {
-    const model = opts.image ? GROQ_VISION_MODEL : opts.fast ? GROQ_FAST_MODEL : GROQ_CHAT_MODEL;
+    // Images need the vision model; text calls can fall back to other models when one is busy.
+    const models = opts.image ? [GROQ_VISION_MODEL] : modelChain(opts.fast ? GROQ_FAST_MODEL : GROQ_CHAT_MODEL);
     const userContent: Groq.Chat.Completions.ChatCompletionContentPart[] = [{ type: "text", text: opts.user }];
     if (opts.image) {
       userContent.push({ type: "image_url", image_url: { url: `data:${opts.image.mediaType};base64,${opts.image.base64}` } });
     }
+    return withGroqFallback(models, async (model) => {
     const base = {
       model,
       max_completion_tokens: 4000,
@@ -108,6 +110,7 @@ export async function jsonCall<T>(opts: {
       text = res.choices[0]?.message?.content ?? "";
     }
     return JSON.parse(text) as T;
+    });
   }
 
   throw new Error("No AI provider configured");
@@ -127,16 +130,18 @@ export async function textCall(opts: { system: string; user: string; maxTokens?:
     return textOf(res.content);
   }
   if (provider() === "groq") {
-    const res = await groq().chat.completions.create({
-      model: GROQ_FAST_MODEL,
-      max_completion_tokens: opts.maxTokens ?? 2000,
-      ...reasoningParams(GROQ_FAST_MODEL),
-      messages: [
-        { role: "system", content: opts.system },
-        { role: "user", content: opts.user },
-      ],
+    return withGroqFallback(modelChain(GROQ_FAST_MODEL), async (model) => {
+      const res = await groq().chat.completions.create({
+        model,
+        max_completion_tokens: opts.maxTokens ?? 2000,
+        ...reasoningParams(model),
+        messages: [
+          { role: "system", content: opts.system },
+          { role: "user", content: opts.user },
+        ],
+      });
+      return (res.choices[0]?.message?.content ?? "").trim();
     });
-    return (res.choices[0]?.message?.content ?? "").trim();
   }
   throw new Error("No AI provider configured");
 }

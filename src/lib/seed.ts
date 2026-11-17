@@ -122,6 +122,23 @@ export function seedDb(): Db {
     ),
     lead(
       {
+        id: "karthik",
+        studentName: "Karthik Murugan",
+        parentName: "Meena Murugan",
+        language: "ta",
+        city: "Madurai",
+        universityId: "uni-b",
+        stage: "deciding",
+        scholarshipPaid: true,
+        counselledAt: now - 4 * DAY,
+        lastActivityAt: now - 3 * DAY,
+        counsellingNotes:
+          "Mother prefers Tamil. Worried about hostel safety and the total cost; Karthik is keen on robotics.",
+      },
+      now,
+    ),
+    lead(
+      {
         id: "sneha",
         studentName: "Sneha Iyer",
         parentName: "Ramesh Iyer",

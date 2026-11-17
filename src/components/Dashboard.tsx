@@ -14,7 +14,58 @@ interface Data {
   objectionCounts: Record<string, number>;
   funnel: { stage: Stage; count: number }[];
   recentEvents: AppEvent[];
+  metrics: Metrics;
   meta: { aiEnabled: boolean; provider: string; now: number; clockOffsetDays: number };
+}
+
+interface Metrics {
+  families: number;
+  enrolled: number;
+  notJoining: number;
+  engaged: number;
+  parentsEngaged: number;
+  worriesRaised: number;
+  worriesResolved: number;
+  docsChecked: number;
+  docsFirstTimeOk: number;
+  docTypes: number;
+  remindersSent: number;
+  handovers: number;
+  blockedAnswers: number;
+}
+
+const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : "–");
+
+function MetricsPanel({ m }: { m: Metrics }) {
+  const rows = [
+    { label: "Primary: enrolled", value: `${m.enrolled} of ${m.families}`, sub: pct(m.enrolled, m.families) },
+    { label: "Families who engaged", value: `${m.engaged} of ${m.families}`, sub: `parents: ${m.parentsEngaged}` },
+    { label: "Worries resolved", value: `${m.worriesResolved} of ${m.worriesRaised}`, sub: pct(m.worriesResolved, m.worriesRaised) },
+    { label: "Documents right first time", value: `${m.docsFirstTimeOk} of ${m.docTypes}`, sub: `${m.docsChecked} checks` },
+    { label: "Reminders sent", value: String(m.remindersSent), sub: "never after a no" },
+    { label: "Handed to a counsellor", value: String(m.handovers), sub: `${m.blockedAnswers} unapproved answers blocked` },
+    { label: "Guardrail: not joining", value: String(m.notJoining), sub: "reminders stopped" },
+  ];
+  return (
+    <section className="mb-6 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+      <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="text-sm font-semibold text-slate-800">Experiment metrics (live from this demo)</h2>
+        <p className="text-[11px] text-slate-400">
+          Real launch: Companion vs normal follow-up, success = +8 pts enrolled in 21 days with no rise in refunds or
+          complaints
+        </p>
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-7">
+        {rows.map((r) => (
+          <div key={r.label} className="rounded-xl bg-slate-50 p-3">
+            <p className="text-[11px] text-slate-500">{r.label}</p>
+            <p className="mt-1 text-lg font-bold text-slate-900">{r.value}</p>
+            <p className="text-[11px] text-slate-500">{r.sub}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export default function Dashboard() {
@@ -103,6 +154,8 @@ export default function Dashboard() {
           </div>
         ))}
       </div>
+
+      {data.metrics && <MetricsPanel m={data.metrics} />}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* Families */}

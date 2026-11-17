@@ -5,7 +5,7 @@ import type { Lang, Lead, Speaker } from "./types";
 import { LANG_NAMES } from "./types";
 import { knowledgePrompt, normalizeCitations } from "./knowledge";
 import { CHAT_EFFORT, MODEL, claude, fallbackParams, textOf } from "./claude";
-import { GROQ_CHAT_MODEL, groq, reasoningParams } from "./groq";
+import { GROQ_CHAT_MODEL, groq, modelChain, reasoningParams, withGroqFallback } from "./groq";
 import { provider } from "./llm";
 import { TOOLS, runTool, type ToolEffects } from "./tools";
 import { SAFE_FALLBACK, checkGrounded, groundingEnabled } from "./grounding";
@@ -31,7 +31,7 @@ Rules:
 - Cite an id only when that entry actually supports the sentence. Information from get_lead_status needs no citation.
 - Escalate on distress, anger, payment problems, or when you fail to answer the same question twice.
 - Messages arrive labelled [Student ...] or [Parent ...]. Address that person. Parents often care about degree validity, safety, cost and outcomes; students about learning, campus life and careers.
-- Always write your reply in the REPLY LANGUAGE given in the family context, in that language's own script (Telugu script for Telugu, Devanagari for Hindi). Keep ids exactly as written in English letters, like [F2], even inside Telugu or Hindi text. Write dates as digits, e.g. 25/11/2026. Write simple, warm, everyday language (in Telugu or Hindi, use common spoken words, not formal or literary ones).
+- Always write your reply in the REPLY LANGUAGE given in the family context, in that language's own script (Telugu, Devanagari, Tamil, Kannada or Malayalam script). Keep ids exactly as written in English letters, like [F2], even inside Telugu or Hindi text. Write dates as digits, e.g. 25/11/2026. Write simple, warm, everyday language (in Telugu or Hindi, use common spoken words, not formal or literary ones).
 - Plain text only: no markdown (no ** bold, no # headings). Keep replies short like a WhatsApp message: at most about 120 words, at most 4 short lines starting with "- ". End with one clear next step.
 - Never ask for or store Aadhaar numbers, bank details, passwords or OTPs.`;
 
@@ -47,8 +47,11 @@ ${knowledgePrompt(db.knowledge, db.settings.answerMode, mode)}`;
 
 /** Detect the script of a message so the reply language never depends on the model noticing. */
 function detectLang(text: string): Lang | undefined {
-  if (/[ఀ-౿]/.test(text)) return "te";
-  if (/[ऀ-ॿ]/.test(text)) return "hi";
+  if (/[\u0C00-\u0C7F]/.test(text)) return "te";
+  if (/[\u0900-\u097F]/.test(text)) return "hi";
+  if (/[\u0B80-\u0BFF]/.test(text)) return "ta";
+  if (/[\u0C80-\u0CFF]/.test(text)) return "kn";
+  if (/[\u0D00-\u0D7F]/.test(text)) return "ml";
   if (/[A-Za-z]/.test(text)) return "en";
   return undefined;
 }
@@ -264,14 +267,17 @@ async function runGroq(lead: Lead, role: "student" | "parent", text: string, rep
 
   try {
     for (let step = 0; step < MAX_STEPS; step++) {
-      const res = await groq().chat.completions.create({
-        model: GROQ_CHAT_MODEL,
-        max_completion_tokens: 2000,
-        ...reasoningParams(GROQ_CHAT_MODEL, "medium"),
-        tools: GROQ_TOOLS,
-        tool_choice: "auto",
-        messages: [{ role: "system", content: system }, ...trimHistory(history)],
-      });
+      // If the main model is rate-limited (free tier), the next model in the chain answers.
+      const res = await withGroqFallback(modelChain(GROQ_CHAT_MODEL), (model) =>
+        groq().chat.completions.create({
+          model,
+          max_completion_tokens: 2000,
+          ...reasoningParams(model, "medium"),
+          tools: GROQ_TOOLS,
+          tool_choice: "auto",
+          messages: [{ role: "system", content: system }, ...trimHistory(history)],
+        }),
+      );
       const msg = res.choices[0]?.message;
       if (!msg) break;
 

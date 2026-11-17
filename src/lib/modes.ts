@@ -133,13 +133,13 @@ export function modeForStage(stage: Stage): ModeId {
 
 // Keyword hints in English, Hindi and Telugu. Checked in order; first match wins.
 const HINTS: [ModeId, RegExp][] = [
-  ["fees_guidance", /fee|fees|cost|price|loan|emi|scholarship|refund|pay|payment|otp|money|lakh|rupee|₹|फीस|शुल्क|लोन|खर्च|पैसा|भुगतान|स्कॉलरशिप|फ़ीस|ఫీజు|ఖర్చు|లోన్|డబ్బు|చెల్లింపు|వాయిదా|స్కాలర్/i],
-  ["university_enrollment", /document|marksheet|marks memo|transfer certificate|\btc\b|upload|deadline|last date|application form|apply to|spelled wrong|दस्तावेज़|डॉक्यूमेंट|मार्कशीट|आखिरी तारीख|టీసీ|డాక్యుమెంట్|మార్కుల|ఆఖరి తేదీ|గడువు/i],
+  ["fees_guidance", /fee|fees|cost|price|loan|emi|scholarship|refund|pay|payment|otp|money|lakh|rupee|₹|फीस|शुल्क|लोन|खर्च|पैसा|भुगतान|स्कॉलरशिप|फ़ीस|ఫీజు|ఖర్చు|లోన్|డబ్బు|చెల్లింపు|వాయిదా|స్కాలర్|கட்டணம்|கடன்|ಶುಲ್ಕ|ಫೀಸ್|ಸಾಲ|ഫീസ്|വായ്പ/i],
+  ["university_enrollment", /document|marksheet|marks memo|transfer certificate|\btc\b|upload|deadline|last date|application form|apply to|spelled wrong|दस्तावेज़|डॉक्यूमेंट|मार्कशीट|आखिरी तारीख|టీసీ|డాక్యుమెంట్|మార్కుల|ఆఖరి తేదీ|గడువు|ஆவண|சான்றிதழ்|ದಾಖಲೆ|ಪ್ರಮಾಣಪತ್ರ|രേഖ|സർട്ടിഫിക്കറ്റ്/i],
   // Comparing with other options is a decision question, even if it mentions a college.
   ["decision_support", /compare|scaler|newton|state seat|state college|eamcet|jee|other college|better than/i],
-  ["college_choice", /campus|hostel|college|location|far|distance|visit|which university|safe for|हॉस्टल|कॉलेज|कैंपस|दूर|హాస్టల్|కాలేజీ|క్యాంపస్|దూరం/i],
+  ["college_choice", /campus|hostel|college|location|far|distance|visit|which university|safe for|हॉस्टल|कॉलेज|कैंपस|दूर|హాస్టల్|కాలేజీ|క్యాంపస్|దూరం|விடுதி|ஹாஸ்டல்|கல்லூரி|ಹಾಸ್ಟೆಲ್|ಕಾಲೇಜು|ഹോസ്റ്റൽ|കോളേജ്/i],
   ["program_guidance", /curriculum|syllabus|learn|course|subject|certificate|club|placement|job|package|salary|teach|faculty|class|सिलेबस|पढ़ाई|प्लेसमेंट|नौकरी|సిలబస్|ప్లేస్‌మెంట్|ఉద్యోగ|నేర్చు/i],
-  ["decision_support", /worth|should i|should we|join|confus|not sure|right choice|valid|real degree|ugc|aicte|मान्य|असली|सोच|నిజమైన|చేరాలా|ఆలోచ/i],
+  ["decision_support", /worth|should i|should we|join|confus|not sure|right choice|valid|real degree|ugc|aicte|मान्य|असली|सोच|నిజమైన|చేరాలా|ఆలోచ|பட்டம்|செல்லுபடி|ಪದವಿ|ಮಾನ್ಯ|ബിരുദ|അംഗീകൃത/i],
 ];
 
 /** Pick the mode for this message: what they are asking about now, else the stage default. */

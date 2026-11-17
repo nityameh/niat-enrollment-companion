@@ -25,6 +25,7 @@ export default function KnowledgeAdmin() {
   const [draft, setDraft] = useState({ title: "", answer: "", source: "NIAT team" });
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     fetch("/api/knowledge", { cache: "no-store" })
@@ -134,6 +135,70 @@ export default function KnowledgeAdmin() {
             </button>
           );
         })}
+      </div>
+
+      {/* Live check against NIAT's site + restore */}
+      <div className="mb-6">
+        <Card
+          title="Keep the facts current"
+          right={
+            <div className="flex gap-2">
+              <button
+                onClick={async () => {
+                  setChecking(true);
+                  await post({ action: "checkSite" });
+                  setChecking(false);
+                }}
+                disabled={checking}
+                className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+              >
+                {checking ? "Checking niatindia.com…" : "Check against niatindia.com"}
+              </button>
+              <button
+                onClick={() => confirm("Restore the default knowledge base and answer mode?") && post({ action: "restoreDefaults" })}
+                className="rounded-lg px-3 py-1.5 text-xs text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
+              >
+                Restore defaults
+              </button>
+            </div>
+          }
+        >
+          {settings.lastRefresh ? (
+            <div>
+              <p className="mb-2 text-xs text-slate-500">
+                Checked {new Date(settings.lastRefresh.at).toLocaleString("en-IN")} against{" "}
+                <a href={settings.lastRefresh.source} target="_blank" rel="noreferrer" className="text-emerald-700">
+                  {settings.lastRefresh.source}
+                </a>
+              </p>
+              <ul className="space-y-1.5">
+                {settings.lastRefresh.checks.map((c) => (
+                  <li key={c.id} className="flex gap-2 text-xs">
+                    <span
+                      className={`shrink-0 rounded px-1.5 py-0.5 font-semibold ${
+                        c.status === "supported"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : c.status === "changed"
+                            ? "bg-rose-100 text-rose-700"
+                            : "bg-slate-100 text-slate-600"
+                      }`}
+                    >
+                      {c.status === "supported" ? "✓ still true" : c.status === "changed" ? "changed" : "not found"}
+                    </span>
+                    <span className="text-slate-700">
+                      <b className="font-medium">{c.id} {c.title}:</b> {c.note}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500">
+              Fetches NIAT&apos;s live information page and checks whether each fact that cites it is still true. Nothing
+              changes automatically: you decide what to update.
+            </p>
+          )}
+        </Card>
       </div>
 
       {/* Company answers */}

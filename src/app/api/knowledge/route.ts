@@ -2,8 +2,11 @@ import { NextResponse } from "next/server";
 import { loadDb, persist, withDb } from "@/lib/store";
 import { rateLimit } from "@/lib/api-helpers";
 import type { AnswerMode, KnowledgeEntry } from "@/lib/types";
+import { seedKnowledge } from "@/lib/knowledge";
+import { checkFactsAgainstSite } from "@/lib/refresh";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 export const dynamic = "force-dynamic";
 
 // Demo admin API for the company's knowledge base. A real deployment needs login and roles.
@@ -17,7 +20,9 @@ type Body =
   | { action: "setMode"; mode: AnswerMode }
   | { action: "upsert"; entry: Pick<KnowledgeEntry, "title" | "answer" | "source"> & { id?: string } }
   | { action: "toggle"; id: string }
-  | { action: "delete"; id: string };
+  | { action: "delete"; id: string }
+  | { action: "restoreDefaults" }
+  | { action: "checkSite" };
 
 async function handlePOST(req: Request) {
   const limited = rateLimit(req, 30);
@@ -65,6 +70,19 @@ async function handlePOST(req: Request) {
       db.knowledge.splice(i, 1);
       break;
     }
+
+    case "restoreDefaults":
+      db.knowledge = seedKnowledge();
+      db.settings.answerMode = "company_and_public";
+      break;
+
+    case "checkSite":
+      try {
+        db.settings.lastRefresh = await checkFactsAgainstSite(db.knowledge);
+      } catch (e) {
+        return NextResponse.json({ error: (e as Error).message }, { status: 502 });
+      }
+      break;
 
     default:
       return NextResponse.json({ error: "Unknown action" }, { status: 400 });

@@ -20,7 +20,40 @@ async function handleGET() {
   }));
 
   const recentEvents = [...db.events].slice(-40).reverse();
-  return NextResponse.json({ leads, objectionCounts, funnel, recentEvents, meta: appMeta() });
+
+  // Layer 2 metrics, computed live from this demo's own data (no invented numbers).
+  const all = db.leads;
+  const count = (type: string) => db.events.filter((e) => e.type === type).length;
+  const objections = all.flatMap((l) => l.objections);
+  // A document is "right first time" when the first upload of that type passed.
+  let firstTimeOk = 0;
+  let docTypes = 0;
+  for (const l of all) {
+    const seen = new Set<string>();
+    for (const d of l.docs) {
+      if (seen.has(d.type)) continue;
+      seen.add(d.type);
+      docTypes++;
+      if (d.status === "ok") firstTimeOk++;
+    }
+  }
+  const metrics = {
+    families: all.length,
+    enrolled: all.filter((l) => l.stage === "enrolled").length,
+    notJoining: all.filter((l) => l.stage === "dropped").length,
+    engaged: all.filter((l) => l.chat.some((m) => m.role === "student" || m.role === "parent")).length,
+    parentsEngaged: all.filter((l) => l.parentEngaged).length,
+    worriesRaised: objections.length,
+    worriesResolved: objections.filter((o) => o.resolved).length,
+    docsChecked: all.reduce((n, l) => n + l.docs.length, 0),
+    docsFirstTimeOk: firstTimeOk,
+    docTypes,
+    remindersSent: count("nudge_sent"),
+    handovers: all.reduce((n, l) => n + l.escalations.length, 0),
+    blockedAnswers: count("reply_blocked"),
+  };
+
+  return NextResponse.json({ leads, objectionCounts, funnel, recentEvents, metrics, meta: appMeta() });
 }
 
 export const GET = withDb(handleGET);
