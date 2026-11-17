@@ -114,13 +114,6 @@ export const TOOLS: Anthropic.Beta.Messages.BetaTool[] = [
       additionalProperties: false,
     },
   },
-  {
-    name: "offer_decision_brief",
-    description:
-      "Tell the app to show the family a button to generate their written Decision Brief (pros, concerns with honest answers, what to verify, questions to ask). Use when they are weighing the decision or a parent wants something to read.",
-    strict: true,
-    input_schema: { type: "object", properties: {}, required: [], additionalProperties: false },
-  },
 ];
 
 const DAY = 86_400_000;
@@ -131,6 +124,7 @@ export interface ToolEffects {
 
 /** Execute one tool call against the lead. Returns the text result for Claude. */
 export function runTool(lead: Lead, name: string, input: Record<string, unknown>, effects: ToolEffects): string {
+  void effects; // kept for future UI effects
   const t = now();
   switch (name) {
     case "get_lead_status": {
@@ -221,10 +215,6 @@ export function runTool(lead: Lead, name: string, input: Record<string, unknown>
       lead.callBooked = String(input.preferred_time);
       logEvent(lead.id, "call_booked", { time: input.preferred_time });
       return `Call request saved for "${input.preferred_time}" (demo: the counsellor confirms the exact slot).`;
-    }
-    case "offer_decision_brief": {
-      effects.offerBrief = true;
-      return "The app now shows a 'Generate Decision Brief' button to the family.";
     }
     default:
       return `Unknown tool ${name}`;

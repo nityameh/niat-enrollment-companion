@@ -68,8 +68,8 @@ export default function PhoneChat({ lead, role, onRole, sources, busy, onSend, o
       </div>
 
       {/* Phone */}
-      <div className="relative w-full max-w-[380px] rounded-[2.6rem] bg-slate-900 p-2.5 shadow-2xl shadow-slate-900/20">
-        <div className="flex h-[680px] flex-col overflow-hidden rounded-[2.1rem] bg-[#efeae2]">
+      <div className="relative w-full max-w-[920px] rounded-[1.8rem] bg-slate-900 p-3 shadow-2xl shadow-slate-900/20">
+        <div className="flex h-[620px] flex-col overflow-hidden rounded-[1.2rem] bg-[#efeae2]">
           {/* Chat header */}
           <div className="flex items-center gap-3 bg-[#075e54] px-4 py-3 text-white">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-sm font-bold text-[#075e54]">N</span>
@@ -105,7 +105,7 @@ export default function PhoneChat({ lead, role, onRole, sources, busy, onSend, o
                   )}
                   <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
                     <div
-                      className={`relative max-w-[82%] rounded-lg px-2.5 pb-1 pt-1.5 text-[13px] leading-snug text-slate-900 shadow-sm ${
+                      className={`relative max-w-[68%] rounded-lg px-2.5 pb-1 pt-1.5 text-[13px] leading-snug text-slate-900 shadow-sm ${
                         mine ? "rounded-tr-none bg-[#d9fdd3]" : "rounded-tl-none bg-white"
                       }`}
                     >

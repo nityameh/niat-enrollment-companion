@@ -190,6 +190,7 @@ export interface KnowledgeEntry {
   answer: string;
   source: string; // URL for public facts, "NIAT team" etc. for company answers
   topics?: ModeId[]; // agent modes this entry is used in (none = all)
+  questions?: string[]; // ways families ask this, to help match paraphrases
   enabled: boolean;
   updatedAt: number;
 }

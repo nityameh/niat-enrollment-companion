@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { loadDb, persist, withDb } from "@/lib/store";
 import { rateLimit } from "@/lib/api-helpers";
 import type { AnswerMode, KnowledgeEntry } from "@/lib/types";
-import { seedKnowledge } from "@/lib/knowledge";
+import { parseBulk, seedKnowledge } from "@/lib/knowledge";
 import { checkFactsAgainstSite } from "@/lib/refresh";
 
 export const runtime = "nodejs";
@@ -18,7 +18,8 @@ async function handleGET() {
 
 type Body =
   | { action: "setMode"; mode: AnswerMode }
-  | { action: "upsert"; entry: Pick<KnowledgeEntry, "title" | "answer" | "source"> & { id?: string } }
+  | { action: "upsert"; entry: Pick<KnowledgeEntry, "title" | "answer" | "source"> & { id?: string; questions?: string[] } }
+  | { action: "bulkAdd"; text: string }
   | { action: "toggle"; id: string }
   | { action: "delete"; id: string }
   | { action: "restoreDefaults" }
@@ -45,13 +46,14 @@ async function handlePOST(req: Request) {
       const title = body.entry.title?.trim().slice(0, 120);
       const answer = body.entry.answer?.trim().slice(0, 1500);
       const source = body.entry.source?.trim().slice(0, 300) || "NIAT team";
+      const questions = (body.entry.questions ?? []).map((q) => q.trim().slice(0, 200)).filter(Boolean).slice(0, 12);
       if (!title || !answer) return NextResponse.json({ error: "Title and answer are required" }, { status: 400 });
       const existing = body.entry.id ? db.knowledge.find((k) => k.id === body.entry.id) : undefined;
       if (existing) {
-        Object.assign(existing, { title, answer, source, updatedAt: t });
+        Object.assign(existing, { title, answer, source, questions, updatedAt: t });
       } else {
         const next = 1 + Math.max(0, ...db.knowledge.filter((k) => k.kind === "company").map((k) => Number(k.id.slice(1)) || 0));
-        db.knowledge.unshift({ id: `C${next}`, kind: "company", title, answer, source, enabled: true, updatedAt: t });
+        db.knowledge.unshift({ id: `C${next}`, kind: "company", title, answer, source, questions, enabled: true, updatedAt: t });
       }
       break;
     }
@@ -68,6 +70,25 @@ async function handlePOST(req: Request) {
       const i = db.knowledge.findIndex((x) => x.id === body.id && x.kind === "company");
       if (i < 0) return NextResponse.json({ error: "Only company answers can be deleted (disable public facts instead)" }, { status: 400 });
       db.knowledge.splice(i, 1);
+      break;
+    }
+
+    case "bulkAdd": {
+      const items = parseBulk(String(body.text ?? "")).slice(0, 30);
+      if (!items.length) return NextResponse.json({ error: "No Q:/A: pairs found" }, { status: 400 });
+      let next = 1 + Math.max(0, ...db.knowledge.filter((k) => k.kind === "company").map((k) => Number(k.id.slice(1)) || 0));
+      for (const it of items) {
+        db.knowledge.unshift({
+          id: `C${next++}`,
+          kind: "company",
+          title: it.title.slice(0, 120),
+          answer: it.answer.slice(0, 1500),
+          source: "NIAT team",
+          questions: it.questions.slice(0, 12),
+          enabled: true,
+          updatedAt: t,
+        });
+      }
       break;
     }
 

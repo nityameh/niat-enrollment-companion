@@ -29,7 +29,7 @@ export const MODES: Record<ModeId, Mode> = {
     playbook: `MODE: DECISION SUPPORT. The family is deciding whether this is the right step.
 - Always answer the question they asked first, with balanced points from the knowledge, including limits (no job guarantee). Never push.
 - Then, if useful, ask at most one short question about what matters most to them (career goal, cost, distance, alternatives).
-- Offer the written Decision Brief (offer_decision_brief) or a chat with a current student when useful.`,
+- Offer a chat with a current student or a counsellor call when useful.`,
     quickReplies: {
       student: ["Is this degree actually valid?", "Is it better than a state college seat?", "Should I join or wait for state counselling?"],
       parent: ["ఈ డిగ్రీ నిజమైనదేనా?", "क्या यह डिग्री मान्य है?", "Is this the right choice for my child?"],

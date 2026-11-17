@@ -5,7 +5,7 @@ import type { AppEvent, AnswerMode, DocType } from "@/lib/types";
 import { LANG_NAMES } from "@/lib/types";
 import type { SourceMap } from "@/lib/knowledge";
 import PhoneChat, { type ClientLead } from "./PhoneChat";
-import BehindScenes from "./BehindScenes";
+import { ActivityLog, JourneyBar } from "./FamilyPanels";
 import { Avatar, ModeBadge } from "./ui";
 
 interface Meta {
@@ -23,6 +23,7 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
   const [role, setRole] = useState<"student" | "parent">(initialRole);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [logOpen, setLogOpen] = useState(false);
 
   const fetchLead = useCallback(async () => {
     const r = await fetch(`/api/lead/${leadId}`, { cache: "no-store" });
@@ -89,13 +90,6 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
     upload(docType, new File([blob], file, { type: "image/png" }));
   }
 
-  async function brief() {
-    const j = await run("brief", () =>
-      fetch("/api/brief", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ leadId }) }),
-    );
-    if (j?.brief) window.open(`/brief/${leadId}`, "_blank");
-  }
-
   function skip() {
     run("skip", () =>
       fetch("/api/clock", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ days: 3 }) }),
@@ -109,7 +103,7 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
       {/* Family header */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Avatar name={lead.studentName} className="h-11 w-11 text-sm" />
           <div>
@@ -129,7 +123,10 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
 
       {error && <p className="mb-4 rounded-xl bg-rose-50 px-4 py-2 text-sm text-rose-700 ring-1 ring-rose-200">{error}</p>}
 
-      <div className="grid gap-8 lg:grid-cols-[400px_1fr]">
+      <JourneyBar lead={lead} busy={busy} onRemind={skip} />
+
+      <div className="mt-5 flex flex-col gap-4 lg:flex-row lg:items-start">
+        <div className="min-w-0 flex-1">
         <PhoneChat
           lead={lead}
           role={role}
@@ -140,16 +137,10 @@ export default function LeadView({ leadId, initialRole }: { leadId: string; init
           onUpload={upload}
           onSample={sample}
         />
-        <div>
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-slate-400">Behind the scenes</p>
-          <BehindScenes
-            lead={lead}
-            events={events}
-            now={meta.now}
-            busy={busy}
-            onSkip={skip}
-            onBrief={brief}
-          />
+        </div>
+        {/* Log sits beside the chat: a small button until opened */}
+        <div className={`lg:sticky lg:top-20 ${logOpen ? "lg:w-[300px]" : "lg:w-[190px]"}`}>
+          <ActivityLog events={events} open={logOpen} onToggle={() => setLogOpen((v) => !v)} />
         </div>
       </div>
     </div>

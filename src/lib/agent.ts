@@ -325,9 +325,8 @@ function runMock(lead: Lead, role: "student" | "parent", text: string): AgentRes
   } else if (has("degree", "valid", "ugc", "aicte", "real", "university")) {
     runTool(lead, "log_objection", { type: "degree_validity", severity: "high", summary: "Asked whether the degree is valid", resolved: false }, effects);
     out.push(
-      "Good question. NIAT itself is not a university [F1]. The B.Tech degree is awarded by the partner university, which is UGC-recognised or AICTE-approved [F2]. NIAT adds a separate, non-credit Industry Ready Certificate [F7]. Would a written Decision Brief for the family help?",
+      "Good question. NIAT itself is not a university [F1]. The B.Tech degree is awarded by the partner university, which is UGC-recognised or AICTE-approved [F2]. NIAT adds a separate, non-credit Industry Ready Certificate [F7]. I can also arrange a chat with a current student.",
     );
-    runTool(lead, "offer_decision_brief", {}, effects);
   } else if (has("fee", "cost", "loan", "emi", "money", "scholarship", "refund")) {
     runTool(lead, "log_objection", { type: "fees_and_loans", severity: "medium", summary: "Asked about total cost / loans", resolved: false }, effects);
     runTool(lead, "escalate_to_counsellor", { reason: "Family wants exact fees, scholarship and loan details", urgency: "normal" }, effects);
@@ -344,8 +343,7 @@ function runMock(lead: Lead, role: "student" | "parent", text: string): AgentRes
     out.push("Hostel arrangements depend on each university [F13]. I can book a call so the counsellor can share the details for your campus.");
   } else if (has("scaler", "newton", "other college", "state seat", "eamcet", "jee")) {
     runTool(lead, "log_objection", { type: "competitor_or_other_option", severity: "medium", summary: "Comparing with another option", resolved: false }, effects);
-    out.push("It's sensible to compare. Check for each option: who awards the degree, total 4-year cost in writing, and outcomes for one specific batch. I can prepare a Decision Brief with these questions.");
-    runTool(lead, "offer_decision_brief", {}, effects);
+    out.push("It's sensible to compare. Check for each option: who awards the degree, total 4-year cost in writing, and outcomes for one specific batch. A counsellor can go through them with you.");
   } else if (has("document", "marksheet", "certificate", "tc", "upload", "apply", "next step")) {
     out.push("You need to apply to the university separately [F3]. Upload your documents in the checklist on the right, and I'll check each one for mistakes before you submit.");
   } else if (has("join", "yes", "ready", "let's go")) {
