@@ -36,7 +36,7 @@ const REAL = [
   ["Knowledge base and answer modes", "Real and editable at /admin"],
   ["Risk score, reminders, counsellor dashboard", "Real logic; time is simulated with “Skip 3 days”"],
   ["WhatsApp", "Simulated phone; a real WhatsApp Cloud API connector is included but not tested end to end"],
-  ["Families, universities, document rules, scholarship payment", "Synthetic demo data"],
+  ["Families, universities, document rules", "Synthetic demo data"],
 ];
 
 export default function AboutPage() {
@@ -74,8 +74,8 @@ export default function AboutPage() {
         <p>
           Counselling ends with a suggestion, not a decision. The family still has to decide on a four-year career
           step, often with the student and parent disagreeing, and then complete a <b>separate application at the
-          collaborating university</b>: NIAT counsels, the university admits. Even families who have made a scholarship
-          payment can stay unsure.
+          collaborating university</b>: NIAT counsels, the university admits. Many families still have doubts after the
+          counselling session.
         </p>
         <p className="mt-3">
           Every gap here is a place a lead goes quiet: an unanswered worry about the degree, confusion about fees, a

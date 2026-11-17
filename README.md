@@ -104,5 +104,5 @@ Regenerate the synthetic sample documents: `node scripts/make-samples.mjs`.
 ## Known limits
 
 - The JSON store is for a demo. On Vercel, `/tmp` is per instance and resets, so use a single small server (or swap in Supabase) for a reliable public link.
-- University configs, the scholarship payment and all families are invented.
+- University configs and all families are invented.
 - Telugu and Hindi output should be checked by a native speaker.
