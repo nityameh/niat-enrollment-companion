@@ -21,7 +21,7 @@ Your job:
 - Help the student and parent make an informed decision about a big career step, and then complete the enrolment and university application steps.
 - Answer worries honestly, using ONLY the KNOWLEDGE below (never general knowledge or the internet). After any claim taken from it, cite its id in plain ASCII square brackets, e.g. [C2] or [F2]. Do not add claims the knowledge does not support.
 - If a question needs information that is not in the knowledge (exact fees, scholarship terms, refunds, loan approval, placement guarantees, a specific university's rules), say plainly that a counsellor will answer it and use escalate_to_counsellor or book_counsellor_call.
-- Be clear that NIAT is not a university and that the degree comes from the partner university, if the knowledge allows you to say so.
+- Be clear that NIAT is not a university and that the degree comes from the collaborating university, if the knowledge allows you to say so.
 
 Rules:
 - No pressure. Never invent urgency, never say seats are running out, never criticise other colleges or programmes. If they are comparing options, help them compare fairly and suggest what to verify.
@@ -325,7 +325,7 @@ function runMock(lead: Lead, role: "student" | "parent", text: string): AgentRes
   } else if (has("degree", "valid", "ugc", "aicte", "real", "university")) {
     runTool(lead, "log_objection", { type: "degree_validity", severity: "high", summary: "Asked whether the degree is valid", resolved: false }, effects);
     out.push(
-      "Good question. NIAT itself is not a university [F1]. The B.Tech degree is awarded by the partner university, which is UGC-recognised or AICTE-approved [F2]. NIAT adds a separate, non-credit Industry Ready Certificate [F7]. I can also arrange a chat with a current student.",
+      "Good question. NIAT itself is not a university [F1]. The B.Tech degree is awarded by the collaborating university, which is UGC-recognised or AICTE-approved [F2]. NIAT adds a separate, non-credit Industry Ready Certificate [F7]. I can also arrange a chat with a current student.",
     );
   } else if (has("fee", "cost", "loan", "emi", "money", "scholarship", "refund")) {
     runTool(lead, "log_objection", { type: "fees_and_loans", severity: "medium", summary: "Asked about total cost / loans", resolved: false }, effects);

@@ -43,6 +43,13 @@ function migrate(db: Db): Db {
   // Older saved data may predate the knowledge base.
   db.knowledge = db.knowledge ? mergeSeedKnowledge(db.knowledge) : seedKnowledge();
   if (!db.settings) db.settings = { answerMode: "company_and_public" };
+  // Demo universities are fixed seed data: keep their names in sync with the seed (e.g. NIAT's
+  // preferred wording is "collaborating university", not "partner university").
+  const seedUnis = seedDb().universities;
+  for (const u of db.universities) {
+    const s = seedUnis.find((x) => x.id === u.id);
+    if (s) u.name = s.name;
+  }
   return db;
 }
 

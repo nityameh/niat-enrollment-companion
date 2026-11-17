@@ -96,7 +96,7 @@ export default async function Home() {
             Keep families in the conversation from counselling to joining
           </h1>
           <p className="mt-3 max-w-3xl text-[15px] leading-relaxed text-slate-600">
-            After NIAT&apos;s one-on-one counselling, a family still has to decide, and then apply to the partner university
+            After NIAT&apos;s one-on-one counselling, a family still has to decide, and then apply to the collaborating university
             separately. That is where hesitant families drop off. This companion guides them through it on WhatsApp,
             answers doubts honestly at any hour, and tells counsellors exactly who needs a person.
           </p>

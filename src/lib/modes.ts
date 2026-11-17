@@ -39,8 +39,8 @@ export const MODES: Record<ModeId, Mode> = {
     id: "college_choice",
     label: "College choice",
     icon: "🏫",
-    summary: "Confused about the suggested partner college: location, hostel, which campus.",
-    playbook: `MODE: COLLEGE CHOICE. The family is unsure about the suggested partner university or campus.
+    summary: "Confused about the suggested collaborating college: location, hostel, which campus.",
+    playbook: `MODE: COLLEGE CHOICE. The family is unsure about the suggested collaborating university or campus.
 - Use get_lead_status to see the suggested university. Explain that the degree comes from that university and hostels depend on it, only as the knowledge allows.
 - Help them list what to check about the campus (distance, hostel, safety, approvals) without inventing details about any campus.
 - If they want a different campus, escalate to a counsellor; you cannot change the allotment yourself.`,
@@ -82,7 +82,7 @@ export const MODES: Record<ModeId, Mode> = {
     label: "University application",
     icon: "📑",
     summary: "The separate university application: documents, mistakes, deadline.",
-    playbook: `MODE: UNIVERSITY APPLICATION. The family is applying to the partner university separately.
+    playbook: `MODE: UNIVERSITY APPLICATION. The family is applying to the collaborating university separately.
 - Call get_lead_status first. Tell them exactly which documents are missing or flagged and the deadline, nothing more.
 - Ask them to send a clear photo of the next missing document with the attachment button.
 - If a document was flagged, explain the fix in simple words. Schedule a reminder for the next missing item.`,

@@ -7,7 +7,7 @@ const DAY = 86_400_000;
 export const DEMO_UNIVERSITIES: University[] = [
   {
     id: "uni-a",
-    name: "Partner University A (demo)",
+    name: "Collaborating University A (demo)",
     city: "Hyderabad",
     demo: true,
     requiredDocs: [
@@ -26,7 +26,7 @@ export const DEMO_UNIVERSITIES: University[] = [
   },
   {
     id: "uni-b",
-    name: "Partner University B (demo)",
+    name: "Collaborating University B (demo)",
     city: "Pune",
     demo: true,
     requiredDocs: [

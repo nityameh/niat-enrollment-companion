@@ -62,7 +62,7 @@ export async function generateBrief(lead: Lead): Promise<DecisionBrief> {
     });
     mode = "ai";
   } else {
-    body = mockBrief(lead, uni?.name ?? "the partner university");
+    body = mockBrief(lead, uni?.name ?? "the collaborating university");
   }
 
   // Normalise citation formats in every string field (the model may write "(F1, F2)").
@@ -80,7 +80,7 @@ function mockBrief(lead: Lead, uniName: string): BriefBody {
     headline: `Should ${lead.studentName.split(" ")[0]} join NIAT? A balanced summary`,
     summary:
       "This brief lists what NIAT is, what looks strong, the honest answers to your worries, and what to confirm in writing before paying the first-term fee. (mock mode: written from a template, not by AI)",
-    what_niat_is: `NIAT is an upskilling programme by NxtWave that runs alongside the B.Tech at ${uniName}. NIAT is not a university; the degree comes from the partner university [F1][F2].`,
+    what_niat_is: `NIAT is an upskilling programme by NxtWave that runs alongside the B.Tech at ${uniName}. NIAT is not a university; the degree comes from the collaborating university [F1][F2].`,
     strengths: [
       "AI-first, project-based curriculum from the first phase [F8]",
       "Separate Industry Ready Certificate in addition to the degree [F7]",
@@ -89,7 +89,7 @@ function mockBrief(lead: Lead, uniName: string): BriefBody {
     concerns: [
       {
         concern: "Is the degree real?",
-        honest_answer: "Yes, the B.Tech is awarded by the partner university, which is UGC-recognised or AICTE-approved. NIAT's certificate is extra and non-credit [F2][F7].",
+        honest_answer: "Yes, the B.Tech is awarded by the collaborating university, which is UGC-recognised or AICTE-approved. NIAT's certificate is extra and non-credit [F2][F7].",
         source_ids: ["F2", "F7"],
       },
       {

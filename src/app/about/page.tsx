@@ -74,7 +74,7 @@ export default function AboutPage() {
         <p>
           Counselling ends with a suggestion, not a decision. The family still has to decide on a four-year career
           step, often with the student and parent disagreeing, and then complete a <b>separate application at the
-          partner university</b>: NIAT counsels, the university admits. Even families who have made a scholarship
+          collaborating university</b>: NIAT counsels, the university admits. Even families who have made a scholarship
           payment can stay unsure.
         </p>
         <p className="mt-3">
@@ -189,7 +189,7 @@ export default function AboutPage() {
       <Section kicker="Next" title="If this were going live">
         <ul className="list-disc space-y-1.5 pl-5">
           <li>Real WhatsApp number with approved message templates for reminders.</li>
-          <li>Connect to NIAT&apos;s CRM and each partner university&apos;s real document list and deadlines.</li>
+          <li>Connect to NIAT&apos;s CRM and each collaborating university&apos;s real document list and deadlines.</li>
           <li>Staff login and audit log for the knowledge base; native-speaker review of every language.</li>
           <li>Voice notes in Telugu and Hindi for parents who prefer speaking to typing.</li>
         </ul>
