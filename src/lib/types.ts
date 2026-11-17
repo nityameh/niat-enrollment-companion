@@ -24,7 +24,6 @@ export type Stage =
 
 export const STAGE_ORDER: Stage[] = [
   "counselled",
-  "scholarship_paid",
   "deciding",
   "applying",
   "documents_done",

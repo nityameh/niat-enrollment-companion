@@ -17,7 +17,7 @@ export function RiskBadge({ risk }: { risk: Risk }) {
 }
 
 const STAGE_LABEL: Record<Stage, string> = {
-  counselled: "Counselled",
+  counselled: "Counselling done",
   scholarship_paid: "Scholarship paid",
   deciding: "Deciding",
   applying: "Applying",

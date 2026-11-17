@@ -8,7 +8,8 @@ import { MODES, modeForStage } from "@/lib/modes";
 import type { ClientLead } from "./PhoneChat";
 import { RiskBadge, stageLabel } from "./ui";
 
-const JOURNEY: Stage[] = STAGE_ORDER.filter((s) => s !== "counselled");
+// Journey starts at the one-on-one counselling, which every family here has done.
+const JOURNEY: Stage[] = STAGE_ORDER;
 
 /** Top bar: journey stepper, risk, agent mode tag and the reminder button. */
 export function JourneyBar({ lead, busy, onRemind }: { lead: ClientLead; busy: string | null; onRemind: () => void }) {
