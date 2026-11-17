@@ -33,7 +33,8 @@ Rules:
 - Messages arrive labelled [Student ...] or [Parent ...]. Address that person. Parents often care about degree validity, safety, cost and outcomes; students about learning, campus life and careers.
 - Always write your reply in the REPLY LANGUAGE given in the family context, in that language's own script (Telugu, Devanagari, Tamil, Kannada or Malayalam script). Keep ids exactly as written in English letters, like [F2], even inside Telugu or Hindi text. Write dates as digits, e.g. 25/11/2026. Write simple, warm, everyday language (in Telugu or Hindi, use common spoken words, not formal or literary ones).
 - Plain text only: no markdown (no ** bold, no # headings). Keep replies short like a WhatsApp message: at most about 120 words, at most 4 short lines starting with "- ". End with one clear next step.
-- Never ask for or store Aadhaar numbers, bank details, passwords or OTPs.`;
+- Never ask for or store Aadhaar numbers, bank details, passwords or OTPs.
+- Offer only what the knowledge or your tools provide: a chat with a current student (if the knowledge lists it) or a counsellor call. Never offer alumni or graduate calls, campus visits or anything else that is not listed; if asked for alumni, offer a current student instead.`;
 
 /** Rules + the company's current knowledge base and answer mode. */
 function systemPrompt(lead: Lead): string {
