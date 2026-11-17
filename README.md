@@ -2,107 +2,96 @@
 
 **Live demo:** https://enrollment-companion.vercel.app · **Code:** https://github.com/nityameh/niat-enrollment-companion
 
-An AI agent that supports families **after** the NIAT one-on-one counselling, from "should we join?" to "enrolled", and tells counsellors who needs a human and why. Built for the NxtWave Jr. Growth Manager Growth Hack Challenge. All people, documents and university rules are synthetic.
+An AI companion that keeps families engaged **after** NIAT's one-on-one counselling, from "should we join?" through the separate university application to "enrolled", and tells counsellors which families need a person and why. Built for the NxtWave Jr. Growth Manager Growth Hack Challenge. All families, documents and university rules are synthetic; this is not an official NIAT product.
 
 ## What it does
 
 | Part | What happens | AI work |
 |---|---|---|
-| Companion chat (`/lead/[id]`) | Student or parent asks in English, Telugu or Hindi | Claude agent with 8 tools; answers only from cited public NIAT facts |
-| Document checker | Upload a marksheet or transfer certificate photo | Claude vision extracts fields; app flags name mismatch, cut-off page, wrong document |
-| Decision Brief (`/brief/[id]`) | One-page balanced summary for the family | Structured output in the family's language, with sources |
-| Reminder engine | Quiet families get one helpful nudge about their exact next step; never after a "no" | Message written in the family's language |
-| Counsellor dashboard (`/counsellor`) | Families sorted by churn risk, with reasons, worries and escalations | AI call brief per family |
+| Companion chat (`/lead/[id]`) | Parent or student asks anything on a simulated WhatsApp, in Telugu, Hindi, Tamil, Kannada, Malayalam or English | Tool-calling agent (7 tools) that answers only from NIAT-approved knowledge, with citations |
+| Seven agent modes | Decision support, college choice, fees, programme, university application, NIAT enrolment, respectful close | Mode picked from the family's stage and what they ask; each mode has its own playbook and quick replies |
+| Document checker | Family sends a photo of a marksheet or transfer certificate | Vision model reads it; the app flags a name mismatch, the wrong document, a cut-off page, or a missing signature or seal |
+| Reminders | A family quiet for 3 days gets one useful message about their exact next step; a "no" stops everything | Message written in the family's language; runs daily on Vercel Cron |
+| Counsellor dashboard (`/counsellor`) | Families by risk, stage, worry and language, with filters and charts | Explainable risk score and an AI "prep my call" brief per family |
+| Knowledge control (`/admin`) | NIAT's team decides what the bot may say | Second-model grounding check blocks unapproved claims |
 
 ## Pages
 
 | Page | What it is |
 |---|---|
-| `/` | Overview and the demo families |
-| `/lead/[id]?as=parent` | WhatsApp-style phone (chat as parent or student, send document photos with 📎) next to "Behind the scenes": journey, documents, live feed of what the AI did |
-| `/counsellor` | Who needs a human today, why, and an AI "prep my call" brief |
-| `/admin` | **Knowledge base: what the bot is allowed to say** |
-| `/brief/[id]` | The family's Decision Brief |
+| `/` | What was built, a 60-second tour, and all 19 demo families |
+| `/lead/[id]?as=parent` | Tablet-sized WhatsApp simulation (switch parent / student), journey bar, document track, and a log of what the AI did |
+| `/counsellor` | Who needs a human today, why, live metrics and a growth impact calculator |
+| `/admin` | Knowledge base: test a question, pick the answer mode, edit company answers, check public facts against NIAT's live site |
+| `/about` | The problem, the approach and the limits |
 
-## The company controls what the bot says
+## NIAT controls what the bot says
 
-The bot never searches the internet. It answers only from the knowledge base at `/admin`:
+The bot never browses the internet. It answers only from the knowledge base at `/admin`:
 
-- **Company-approved answers** (C1, C2...): written by NIAT's team; add, edit, disable or delete.
-- **Public facts** (F1, F2...): verified facts from niatindia.com with their URLs; can be disabled one by one.
+- **Company answers** (C1, C2...): written by NIAT's team, with the different ways families ask each question. Add one at a time or paste many as `Q:` / `A:` pairs.
+- **Public facts** (F1...F29): taken from niatindia.com (including `/llm-info`, terms, placements and campus pages) with their URLs. "Check against live site" asks a model to compare each fact with the current `/llm-info` page.
 - **Answer mode:** "Company answers only" or "Company answers + public facts".
 
-In "company answers only" mode every reply goes through a second AI check (`src/lib/grounding.ts`). If a reply contains a claim not backed by an approved answer, the family gets "your counsellor will answer this" in their language instead, and a counsellor is alerted. Set `GROUNDING_CHECK=always` to run the check in both modes.
-
-## Real WhatsApp (optional)
-
-The phone in the app is a simulation so every reviewer can try it. To run the same agent on real WhatsApp:
-
-1. Create a Meta developer app with the WhatsApp product (Meta gives a free **test number** that can message up to 5 phone numbers you verify).
-2. Put `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN` (and ideally `WHATSAPP_APP_SECRET`) in `.env.local`.
-3. Expose the app publicly (deployed URL, or `ngrok http 3000` locally) and set the webhook URL to `https://<host>/api/whatsapp/webhook` with your verify token; subscribe to `messages`.
-4. Message the test number from your phone: you play the parent of `WHATSAPP_DEMO_LEAD`. Text messages go to the agent; photos are checked as documents (caption "12", "10" or "TC" picks the document).
-
-Limits: outside 24 hours of the family's last message WhatsApp allows only approved **template** messages, so production reminders need templates. This connector is written to Meta's documented API but has not been tested end to end.
+In "company answers only" mode every reply goes through a second AI check (`src/lib/grounding.ts`). If a reply contains a claim not backed by an approved answer, the family gets "your counsellor will answer this" in their language, and a counsellor is alerted. Set `GROUNDING_CHECK=always` to run the check in both modes.
 
 ## Architecture
 
 ```
-Browser (family / counsellor)
-  -> Next.js API routes
-       -> Claude API (agent loop with tools, vision, structured outputs)
-       -> JSON store (.data/ locally, /tmp on Vercel)   <- n8n schedule calls /api/nudges/run
-       -> n8n webhook (optional) -> email / Telegram
+Browser (family / counsellor / NIAT admin)
+  -> Next.js 16 API routes (Vercel)
+       -> Groq: gpt-oss-120b agent with tools, qwen vision for documents,
+                gpt-oss-20b for reminders, call briefs and grounding checks
+                (falls back to smaller models on rate limits)
+       -> Upstash Redis (whole demo state as one JSON document; local file in dev)
+  <- Vercel Cron, daily -> /api/nudges/run (reminders)
+  -> WhatsApp Cloud API webhook (optional, untested end to end)
 ```
 
-Key files: `src/lib/agent.ts` (agent loop and rules), `src/lib/tools.ts` (tools), `src/lib/knowledge.ts` (the only facts the agent may state, with sources), `src/lib/risk.ts` (explainable risk score), `src/lib/docs.ts`, `src/lib/nudges.ts`, `src/lib/brief.ts`.
+Key files: `src/lib/agent.ts` (agent loop, rules, language handling), `src/lib/modes.ts` (agent modes and routing), `src/lib/tools.ts`, `src/lib/knowledge.ts` (the only facts the agent may state), `src/lib/grounding.ts`, `src/lib/risk.ts` (explainable risk score), `src/lib/docs.ts`, `src/lib/nudges.ts`, `src/lib/store.ts`.
 
 ## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local   # then add GROQ_API_KEY and/or ANTHROPIC_API_KEY
+cp .env.example .env.local   # then add GROQ_API_KEY (free) and/or ANTHROPIC_API_KEY
 npm run dev
 ```
 
-Open http://localhost:3000. Without a key the app runs in **mock mode** (keyword rules, labelled on screen) so the flow can be explored.
+Open http://localhost:3000. Without a key the app runs in **mock mode** (keyword rules, labelled on screen). Without Redis variables it stores data in `.data/db.json`.
 
-## AI providers (one setting: `AI_PROVIDER`)
+## AI providers (`AI_PROVIDER`)
 
-| Provider | Cost | Models used | Notes |
+| Provider | Cost | Models | Notes |
 |---|---|---|---|
-| `groq` | Free tier | `openai/gpt-oss-120b` (agent with tools), `qwen/qwen3.8-27b` (document photos), `openai/gpt-oss-20b` (reminders, call briefs) | Free limits are per model and low (roughly 1,000 requests and 200K tokens a day for gpt-oss-120b, per third-party reports); the agent sends only the last 14 turns to save tokens |
-| `anthropic` | Paid | `claude-opus-5-5` (or `claude-haiku-5-5`) | Refusal fallback on for models that support it |
-| `mock` | Free | none | Keyword rules, for building without any key |
+| `groq` (default) | Free tier | `openai/gpt-oss-120b`, `qwen/qwen3.8-27b`, `openai/gpt-oss-20b` | Free daily limits are low; on a 429 the app falls back to `gpt-oss-20b`, then `llama-3.3-70b-versatile` |
+| `anthropic` | Paid | `claude-opus-5-5` | Same tools and rules; not used in the live demo |
+| `mock` | Free | none | For building without any key |
 
-The tools, NIAT facts, rules and risk logic are shared; only the model call changes (`src/lib/llm.ts`, `src/lib/agent.ts`). Switching provider starts each family's AI history fresh (the visible chat stays).
+## Try it (3 minutes)
 
-Regenerate the synthetic sample documents: `node scripts/make-samples.mjs`.
+1. Open **Ravi** as the parent and tap "ఈ డిగ్రీ నిజమైనదేనా?" (Is this degree real?): a cited Telugu answer, worry logged.
+2. Tap 📎 → Class 12 → "sample: name typo": the mismatch is flagged in Telugu.
+3. Click **Send automatic reminder now**: the reminder a quiet family would get.
+4. Open **Counsellor**: filter "High risk", open a family, click **Prep my call**.
+5. Open **Knowledge**: test a question, switch to "Company answers only", ask something unapproved and watch it get handed to a counsellor.
 
-## Demo script (3 minutes)
+## Real WhatsApp (optional)
 
-1. Open **Ravi**. As the student, ask "Is this degree actually valid?" (cited answer, worry logged).
-2. Switch to **parent**, ask about total cost and loans (honest "confirm in writing", escalation).
-3. Click **Generate Decision Brief**.
-4. Upload **Sample: Name typo** for the Class 12 marksheet (flagged), then **Sample: Correct**.
-5. Click **Skip 3 days**: a reminder lands on the parent's phone.
-6. Open the **Counsellor dashboard**: risk reasons, worries, AI call brief.
-
-## n8n (optional)
-
-1. **Schedule Trigger** (every 15 min) -> **HTTP Request** `POST {APP_URL}/api/nudges/run` with header `x-cron-secret: {CRON_SECRET}`.
-2. **Webhook** (POST, path `enrollment-nudge`) -> **Send Email** or **Telegram** node using `{{$json.body.text}}`. Put the webhook URL in `N8N_WEBHOOK_URL`.
+The phone in the app is a simulation so every reviewer can try it. To run the same agent on real WhatsApp, create a Meta developer app with the WhatsApp product, set `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_VERIFY_TOKEN` (and `WHATSAPP_APP_SECRET`), and point the webhook at `https://<host>/api/whatsapp/webhook`. Outside the 24-hour window WhatsApp allows only approved template messages, so production reminders need templates. This connector follows Meta's documented API but has not been tested end to end. An n8n webhook (`N8N_WEBHOOK_URL`) can also receive reminders for email or Telegram.
 
 ## Safety rules built in
 
-- Facts only from `knowledge.ts`, cited as [F1]...; exact fees, scholarships, refunds and university rules go to a counsellor.
-- No pressure, no fake urgency, no criticising other options; a "not joining" stops all reminders.
-- Never asks for Aadhaar, bank details, passwords or OTPs. Demo uploads are synthetic.
-- Rate limit and daily cap on AI calls (`MAX_AI_CALLS_PER_DAY`).
-- Refusal fallback enabled (`server-side-fallback-2026-07-01`, `fallbacks: "default"`).
+- Facts only from the knowledge base, cited as [F1] / [C1]; exact fees, scholarships, refunds and university rules go to a counsellor.
+- No pressure, no fake urgency, no criticising other options; "not joining" stops all reminders.
+- Never asks for Aadhaar, bank details, passwords or OTPs. Demo documents are synthetic.
+- Rate limit and daily cap on AI calls (`MAX_AI_CALLS_PER_DAY`); the cron route needs `CRON_SECRET` or Vercel's cron agent.
 
 ## Known limits
 
-- The JSON store is for a demo. On Vercel, `/tmp` is per instance and resets, so use a single small server (or swap in Supabase) for a reliable public link.
-- University configs and all families are invented.
-- Telugu and Hindi output should be checked by a native speaker.
+- The `/admin` page has no login, so anyone with the link can edit the demo knowledge. Production needs NIAT staff sign-in.
+- Families, universities and document rules are invented; company answers are placeholders until NIAT writes the real ones.
+- Real WhatsApp is not connected; the chat is a simulation.
+- Replies in all six languages need a native-speaker review before launch.
+- The free Groq tier can rate-limit under heavy use.
+- The churn numbers in the write-up are assumptions to be tested, not NIAT data.
